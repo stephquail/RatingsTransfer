@@ -7,6 +7,8 @@
 #   - participant number (to insert data into appropriate row when looping through participants for analysis)
 
 CI101 <- c("R/data/CI101.csv", "CI101", 1)
+CI102 <- c("R/data/CI102.csv", "CI102", 2)
+CI103 <- c("R/data/CI103.csv", "CI103", 3)
 
 
 ##Adds factors to measured data
