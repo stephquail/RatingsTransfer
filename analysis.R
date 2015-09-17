@@ -28,7 +28,7 @@ library(grid)
 #Vectors of participant data paths, and IDs created in functions
 #Create a list of participant info vectors
 
-ID <- list(CI101, CI102, CI103, CI104, CI105)
+ID <- list(CI101, CI102, CI103, CI104, CI105, CI106, CI107)
 
 #Create Empty Vectors
 #These empty vectors will be filled in with individual participant information as the analysis loops through each participant
