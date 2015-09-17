@@ -11,6 +11,8 @@ CI102 <- c("R/data/CI102.csv", "CI102", 2)
 CI103 <- c("R/data/CI103.csv", "CI103", 3)
 CI104 <- c("R/data/CI104.csv", "CI104", 4)
 CI105 <- c("R/data/CI105.csv", "CI105", 5)
+CI106 <- c("R/data/CI106.csv", "CI106", 6)
+CI107 <- c("R/data/CI107.csv", "CI107", 7)
 
 
 ##Adds factors to measured data
