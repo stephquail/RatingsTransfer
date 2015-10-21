@@ -1,0 +1,83 @@
+---
+title: "Ratings Transfer Summary"
+
+output: html_document
+---
+```{r, echo=FALSE, results="hide"}
+source('analysis.R') # sources the analysis and functions for this project
+source('R/functions.R')
+library(ggplot2)
+```
+
+
+**N = `r length(participant)`**
+
+**Ratings on a scale of -10 - + 10**
+
+- -10: Cue perfectly prevents outcome delivery
+- 0: No relationship between cue and outcome delivery or non-delivery
+- +10: Cue perfectly predicts outcome delivery
+
+###Causal Ratings of Trained Cues
+
+```{r, echo = FALSE}
+oldcues_graph
+```
+
+#### Summary Data
+
+```{r, echo = FALSE}
+model.tables(old.rating.aov, "means")
+```
+
+#### Summary Statistics
+
+```{r, echo = FALSE}
+summary(old.rating.aov)
+```
+
+
+### Causal Ratings of Novel Cues
+```{r, echo = FALSE}
+novelcues_graph
+```
+
+#### Summary Data
+
+#### Summary Statistics
+
+```{r, echo = FALSE}
+pairedTTest(novel.same, novel.diff)
+```
+
+**Rated relationship of Excitor to Same Outcome**
+
+```{r, echo = FALSE}
+t.test(novel.same, mu = 0)
+```
+
+**Rated relationship of Excitor to Different Outcome**
+```{r, echo = FALSE}
+t.test(novel.diff, mu = 0)
+```
+
+### Causal Ratings of Novel Compound Cues
+
+```{r, echo = FALSE}
+transfercues_graph
+```
+
+
+#### Summary Data
+
+```{r, echo = FALSE}
+model.tables(transfer.rating.aov, "means")
+```
+
+
+#### Summary Statistics 
+
+```{r, echo = FALSE}
+summary(transfer.rating.aov)
+```
+
