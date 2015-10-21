@@ -15,6 +15,19 @@ CI106 <- c("R/data/CI106.csv", "CI106", 6)
 CI107 <- c("R/data/CI107.csv", "CI107", 7)
 CI108 <- c("R/data/CI108.csv", "CI108", 8)
 CI109 <- c("R/data/CI109.csv", "CI109", 9)
+CI110 <- c("R/data/CI110.csv", "CI110", 10)
+CI111 <- c("R/data/CI111.csv", "CI111", 11)
+CI112 <- c("R/data/CI112.csv", "CI112", 12)
+CI113 <- c("R/data/CI113.csv", "CI113", 13)
+CI114 <- c("R/data/CI114.csv", "CI114", 14)
+CI115 <- c("R/data/CI115.csv", "CI115", 15)
+CI116 <- c("R/data/CI116.csv", "CI116", 16)
+CI117 <- c("R/data/CI117.csv", "CI117", 17)
+CI118 <- c("R/data/CI118.csv", "CI118", 18)
+CI119 <- c("R/data/CI119.csv", "CI119", 19)
+CI120 <- c("R/data/CI120.csv", "CI120", 20)
+CI121 <- c("R/data/CI121.csv", "CI121", 21)
+CI122 <- c("R/data/CI122.csv", "CI122", 22)
 
 ##Adds factors to measured data
 # Factor 1: charater vector with participant ID codes
@@ -168,3 +181,21 @@ pairedTTest <- function(x,y){
     x,
     y,
     paired = TRUE, var.equal = TRUE)}
+
+#Adds factors to measured data
+#ID: charater vector with participant ID codes
+#Factor 1, 2 & 3: measurement ID variables
+#X: measured data
+add3Factor <- function(id, factor1, factor2, factor3, x){
+  df <-data.frame(id, c(rep(factor1, len = length(x))), c(rep(factor2, len = length(x))), c(rep(factor3, len = length(x))), x)
+  colnames(df) <- c("ID", "Factor1", "Factor2", "Factor3", "X")
+  df
+}
+
+#Adds two factors to measured data
+add2Factor <- function(factor1, factor2, factor3, x){
+  df <-data.frame(factor1, c(rep(factor2, len = length(x))), c(rep(factor3, len = length(x))), x)
+  colnames(df) <- c("ID", "Factor1", "Factor2", "X")
+  df
+}
+
