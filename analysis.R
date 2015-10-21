@@ -24,11 +24,13 @@ source("R/functions.R") # loads functions
 library(ggplot2)
 library(plyr)
 library(grid)
+library(reshape2)
+library(stringr)
 
 #Vectors of participant data paths, and IDs created in functions
 #Create a list of participant info vectors
 
-ID <- list(CI101, CI102, CI103, CI104, CI105, CI106, CI107, CI108, CI109)
+ID <- list(CI101, CI102, CI103, CI104, CI105, CI106, CI107, CI108, CI109, CI110, CI111, CI112, CI113, CI114, CI115, CI116, CI117, CI118, CI119, CI120, CI121, CI122)
 
 #Create Empty Vectors
 #These empty vectors will be filled in with individual participant information as the analysis loops through each participant
@@ -180,6 +182,148 @@ for(i in ID){
 group.df <- data.frame(participant, excitors.same, excitors.diff, inhibitors.same, inhibitors.diff, novel.same, novel.diff, congruent.same.con, congruent.same.incon, congruent.diff.con, congruent.diff.incon, incongruent.same.con, incongruent.same.incon, incongruent.diff.con, incongruent.diff.incon)
 
 ##Export group data to excel file
-dir.output <- "R/output" # sets output folder
+dir.output <- "R/output/data" # sets output folder
 write.csv(group.df, file = file.path(dir.output, "group_ratingtransfer.csv"), row.names = FALSE) 
+
+
+#Graph Data 
+
+#Convert dataframe from wide to long format
+long.rating.df <- melt(group.df,
+                       id.vars = "participant",
+                       variable.name = "cue.presented",
+                       value.name = "causal.rating")
+#Add Factors to Data
+#CUE: Excitors, Inhibitors, Novel, Congruent, Incongruent
+#OUTCOME: Same, Different
+#LOCATION: Consistent, Inconsistent
+
+long.rating.df$factor <- str_split_fixed(long.rating.df$cue.presented, "\\.", 3) # splits individual type labels at "." points
+long.rating.df$cues <- as.factor(long.rating.df$factor[,1])
+long.rating.df$outcome <- as.factor(long.rating.df$factor[,2])
+long.rating.df$location <- as.factor(long.rating.df$factor[,3])
+long.rating.df$factor <- NULL #drops redundant factor 
+
+#Give the levels meaningful names
+levels(long.rating.df$cues)[levels(long.rating.df$cues)=="excitors"] <- "Excitor"
+levels(long.rating.df$cues)[levels(long.rating.df$cues)=="inhibitors"] <- "Inhibitor"
+levels(long.rating.df$cues)[levels(long.rating.df$cues)=="novel"] <- "Novel"
+levels(long.rating.df$cues)[levels(long.rating.df$cues)=="congruent"] <- "Congruent"
+levels(long.rating.df$cues)[levels(long.rating.df$cues)=="incongruent"] <- "Incongruent"
+
+
+levels(long.rating.df$outcome)[levels(long.rating.df$outcome)=="same"] <- "Same"
+levels(long.rating.df$outcome)[levels(long.rating.df$outcome)=="diff"] <- "Different"
+
+levels(long.rating.df$location)[levels(long.rating.df$location)=="con"] <- "Consistent"
+levels(long.rating.df$location)[levels(long.rating.df$location)=="incon"] <- "Inconsistent"
+
+#Order the Outcome Levels
+long.rating.df$outcome <- ordered(long.rating.df$outcome, levels=c("Same", "Different"))
+
+#Split long.df into New and Old Cue presentations
+
+old.rating.df <- long.rating.df[long.rating.df$cues == "Excitor" | long.rating.df$cues == "Inhibitor",]
+old.rating.df <- droplevels(old.rating.df)
+new.rating.df <- long.rating.df[long.rating.df$cues == "Novel",]
+new.rating.df <- droplevels(new.rating.df)
+transfer.rating.df <- long.rating.df[long.rating.df$cues != "Excitor" & long.rating.df$cues != "Inhibitor" & long.rating.df$cues != "Novel",]
+transfer.rating.df <- droplevels(transfer.rating.df)
+#Calculate the summary data to graph
+#Old Cues
+#Within Subjects
+
+oldcues_summWS <- summarySEwithin(old.rating.df, measurevar="causal.rating", withinvars = c("cues", "outcome"), idvar = "participant", na.rm=FALSE, conf.interval=.95)
+
+novelcues_summWS <- summarySEwithin(new.rating.df, measurevar="causal.rating", withinvars = "outcome", idvar = "participant", na.rm=FALSE, conf.interval=.95)
+
+transfercues_summWS <- summarySEwithin(transfer.rating.df, measurevar="causal.rating", withinvars =c("cues", "outcome", "location"), idvar = "participant", na.rm=FALSE, conf.interval=.95)
+
+#Graph causal ratings
+
+columncols <- c("red2", "dodgerblue")
+#For individual cues
+oldcues_graph <- ggplot(oldcues_summWS, aes(x=cues, y=causal.rating, fill = outcome)) +
+  geom_bar(position=position_dodge(), stat = "identity") +
+  scale_fill_manual(values = columncols) +
+  geom_errorbar(aes(ymin = causal.rating - se, ymax = causal.rating +se),
+                size=.3,
+                width=.2,
+                position=position_dodge(.9)) +
+  xlab("Cue") +
+  ylab("Causal Rating")
+
+#For novel cues
+
+novelcues_graph <- ggplot(novelcues_summWS, aes(x=outcome, y=causal.rating, fill = outcome)) +
+  geom_bar(position=position_dodge(), stat = "identity") +
+  scale_fill_manual(values = columncols) +
+  geom_errorbar(aes(ymin = causal.rating - se, ymax = causal.rating + se),
+                size=.3,
+                width=.2,
+                position=position_dodge(.9))+
+  xlab("Outcome") +
+  ylab("Causal Rating")
+
+#For compound cues transfer scores
+transfercues_graph <- ggplot(transfercues_summWS, aes(x=location, y=causal.rating, fill=outcome)) +
+  geom_bar(position=position_dodge(), stat = "identity") +
+  scale_fill_manual(values = columncols) +
+  geom_errorbar(aes(ymin = causal.rating - se, ymax = causal.rating + se),
+                size = .3,
+                width=.2,
+                position=position_dodge(.9)) +
+  facet_grid(cues ~.) +
+  ylab("Causal Rating") + 
+  xlab("Inhibitor Cue Location")
+
+pdf("R/output/figures/oldcues.pdf")
+print(oldcues_graph)
+dev.off()
+
+pdf("R/output/figures/novelcues.pdf")
+print(novelcues_graph)
+dev.off()
+
+pdf("R/output/figures/transfercues.pdf")
+print(transfercues_graph)
+dev.off()
+
+
+#Statistical Tests of Causal Ratings of Trained Cues
+
+# old.rating.df is the data frame used
+# (2) x (2) ANOVA
+# Cue: Excitor, Inhibitor
+# Outcome: Same, Different
+
+old.rating.aov <- aov(causal.rating ~ cues*outcome + Error(participant/(cues*outcome)), data = old.rating.df)
+
+pairedTTest(inhibitors.same, inhibitors.diff)
+
+t.test(inhibitors.same, mu = 0)
+t.test(inhibitors.diff, mu = 0)
+t.test(excitors.same, mu = 0)
+t.test(excitors.diff, mu = 0)
+
+#Statistical Test of Novel cues
+
+#new.rating.df is the data frame used
+
+pairedTTest(novel.same, novel.diff)
+
+# Statistical Tests of Causal Ratings Transfer
+
+# transfer.rating.df is the data frame used
+
+#(2) x (2) x (2) Within-Subjects ANOVA
+# Compound Type: Congruent, Incongruent
+# Outcome: Same, Different
+# Inhibitor Location: Consistnent, Inconsistent
+
+transfer.rating.aov <- aov(causal.rating ~ cues*outcome*location + Error(participant/(cues*outcome*location)), data = transfer.rating.df)
+
+summary(transfer.rating.aov)
+model.tables(transfer.rating.aov, "means")
+
 
